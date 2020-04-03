@@ -17,7 +17,7 @@ def collisionCheck(value_pairs,badHash):
         old_message, old_badHash = pair
         if badHash == old_badHash:
             return True, pair
-        else: return False, pair
+        else: return False
 
 
 #Runtime
@@ -46,9 +46,13 @@ if __name__ == "__main__":
         #Call BadHash40
         badHash = BadHash40(message)
 
-        #Check for duplicate 
+        #Check for duplicate
+        collision, member = collisionCheck(value_pairs,badHash)
         value_pairs.append((message,badHash))
-    
-    #If duplicate check hit, end loop
+        if collision == False:
+            break
 
     #Output 2 original messages and collision on hash
+    print ("First  message: "+member[0])
+    print ("Second message: "+message)
+    print ("Duplicate Hash: "+badHash)
