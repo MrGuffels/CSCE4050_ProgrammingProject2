@@ -13,7 +13,7 @@ def genMessage(length):
 #BadHash40(x) Message passed in as a hex string. Returns a hex string
 def BadHash40(message):
     hexString = hashlib.sha256(bytes.fromhex(message[2:])).hexdigest()
-    return hexString[0:9]
+    return hexString[:10]
 
 def collisionCheck(value_pairs,badHash):
     if not value_pairs:
