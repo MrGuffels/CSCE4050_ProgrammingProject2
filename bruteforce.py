@@ -50,7 +50,7 @@ if __name__ == "__main__":
             print ("Tests Done: "+str(counter))
 
         #Call Message Generation
-        message,rand_bit = genMessage(args.lhash)
+        message = genMessage(args.lhash)
         message_file.write(str(message)+'\n')
 
         #Call BadHash40
