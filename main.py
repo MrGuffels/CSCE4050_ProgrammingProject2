@@ -5,20 +5,25 @@ import random
 
 #Message Generation Length passed as a number. Returns a hex string
 def genMessage(length):
-    return hex(random.getrandbits(length))
+    rand_bit = random.getrandbits(length)
+    return hex(rand_bit),rand_bit
 
 #BadHash40(x) Message passed in as a hex string. Returns a hex string
 def BadHash40(message):
-    hexString = hashlib.sha256(bytes.fromhex(message)).hexdigest()
+    good_message = message[2:]
+    while (len(good_message) != 64):
+        good_message = '0'+good_message
+    hexString = hashlib.sha256(bytes.fromhex(good_message[2:])).hexdigest()
     return hexString[0:9]
 
 def collisionCheck(value_pairs,badHash):
+    if not value_pairs:
+        return False, (None,None)
     for pair in value_pairs:
         old_message, old_badHash = pair
         if badHash == old_badHash:
             return True, pair
-        else: return False
-
+    return False, (None,None)
 
 #Runtime
 if __name__ == "__main__":
@@ -35,12 +40,18 @@ if __name__ == "__main__":
     else : print ("The file doesn't exist")
     message_file = open("message_file.txt","w")
     value_pairs = []
+    counter = 0
 
     #Start while Loop
+
     while True:
+        #Progress Check
+        counter += 1
+        if counter % 10000 == 0:
+            print ("Tests Done: "+str(counter))
 
         #Call Message Generation
-        message = genMessage(args.lhash)
+        message,rand_bit = genMessage(args.lhash)
         message_file.write(message)
 
         #Call BadHash40
@@ -49,10 +60,10 @@ if __name__ == "__main__":
         #Check for duplicate
         collision, member = collisionCheck(value_pairs,badHash)
         value_pairs.append((message,badHash))
-        if collision == False:
+        if collision == True:
             break
 
     #Output 2 original messages and collision on hash
-    print ("First  message: "+member[0])
-    print ("Second message: "+message)
-    print ("Duplicate Hash: "+badHash)
+    print ("First  message: "+str(member[0]))
+    print ("Second message: "+str(message))
+    print ("Duplicate Hash: 0x"+str(badHash))
