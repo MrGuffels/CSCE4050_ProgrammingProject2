@@ -5,15 +5,14 @@ import random
 
 #Message Generation Length passed as a number. Returns a hex string
 def genMessage(length):
-    rand_bit = random.getrandbits(length)
-    return hex(rand_bit),rand_bit
+    message = hex(random.getrandbits(length))[2:]
+    while (len(message) != 64):
+        message = '0'+message
+    return '0x'+message
 
 #BadHash40(x) Message passed in as a hex string. Returns a hex string
 def BadHash40(message):
-    good_message = message[2:]
-    while (len(good_message) != 64):
-        good_message = '0'+good_message
-    hexString = hashlib.sha256(bytes.fromhex(good_message[2:])).hexdigest()
+    hexString = hashlib.sha256(bytes.fromhex(message[2:])).hexdigest()
     return hexString[0:9]
 
 def collisionCheck(value_pairs,badHash):
@@ -52,7 +51,7 @@ if __name__ == "__main__":
 
         #Call Message Generation
         message,rand_bit = genMessage(args.lhash)
-        message_file.write(message)
+        message_file.write(str(message)+'\n')
 
         #Call BadHash40
         badHash = BadHash40(message)
