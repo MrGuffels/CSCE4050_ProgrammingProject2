@@ -4,8 +4,8 @@ import os
 import random
 
 #Message Generation Length passed as a number. Returns a hex string
-def genMessage(length):
-    message = hex(random.getrandbits(length))[2:]
+def genMessage():
+    message = hex(random.getrandbits(256))[2:]
     while (len(message) != 64):
         message = '0'+message
     return '0x'+message
@@ -17,52 +17,55 @@ def BadHash40(message):
 
 def collisionCheck(value_pairs,badHash):
     if not value_pairs:
-        return False, (None,None)
-    for pair in value_pairs:
-        old_message, old_badHash = pair
-        if badHash == old_badHash:
-            return True, pair
-    return False, (None,None)
+        return False
+    if badHash in value_pairs:
+        return True
+
 
 #Runtime
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Executes the birthday attack against the BadHash40 hash function')
     parser.add_argument('-lhash', type=int,
-                        help='Length of hash input and output in bits', default=256)
+                        help='Length of hash input/output list', default=100000)
 
     args = parser.parse_args()
 
-    #File management for storing messages for use while testing
-    if os.path.exists("message_file.txt"):
-        os.remove("message_file.txt")
-    else : print ("The file doesn't exist")
-    message_file = open("message_file.txt","w")
-    value_pairs = []
-    counter = 0
-
     #Start while Loop
-
+    runs = 0
     while True:
-        #Progress Check
-        counter += 1
-        if counter % 10000 == 0:
-            print ("Tests Done: "+str(counter))
+        #File management for storing messages for use while testing. Resets each run.
+        if os.path.exists("hash.data"):
+            os.remove("hash.data")
+        else : print ("The file doesn't exist")
+        message_file = open("hash.data","w")   
+        runs += 1
+        value_pairs = {}
+        counter = 0
+        print ("Starting run: "+str(runs))
+        while counter < args.lhash:
+            counter += 1
 
-        #Call Message Generation
-        message = genMessage(args.lhash)
-        message_file.write(str(message)+'\n')
+            #Call Message Generation
+            message = genMessage()
+            message_file.write(str(message))
 
-        #Call BadHash40
-        badHash = BadHash40(message)
+            #Call BadHash40
+            badHash = BadHash40(message)
+            message_file.write(' | '+str(badHash)+'\n')
 
-        #Check for duplicate
-        collision, member = collisionCheck(value_pairs,badHash)
-        value_pairs.append((message,badHash))
+            #Check for duplicate
+            collision = collisionCheck(value_pairs,badHash)
+            if collision == True:
+                break
+            else:
+                value_pairs[badHash] = message
+        message_file.close()
         if collision == True:
             break
 
     #Output 2 original messages and collision on hash
-    print ("First  message: "+str(member[0]))
+    print ("It took "+str(runs)+" runs of "+str(args.lhash)+" messages to find a collision.")
+    print ("First  message: "+str(value_pairs[badHash]))
     print ("Second message: "+str(message))
     print ("Duplicate Hash: 0x"+str(badHash))
